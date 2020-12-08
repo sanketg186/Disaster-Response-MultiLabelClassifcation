@@ -19,13 +19,52 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.pipeline import Pipeline
 #ML models
 from sklearn.multiclass import OneVsRestClassifier
-from sklearn.svm import LinearSVC
+from sklearn.svm import LinearSVC,SVC
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report, accuracy_score
+from sklearn.model_selection import GridSearchCV
+from sklearn.preprocessing import StandardScaler
 import pickle
+import warnings
+warnings.filterwarnings("ignore")
+def evaulation_metric(y_true,y_pred):
+    '''
+    Input 
+    y_true: ground truth dataframe
+    y_pred: predicted dataframe
+    
+    Output
+    report: dataframe that contains mean f1-score,precision and recall value for each class
+    '''
+    report = pd.DataFrame ()
+    for col in y_true.columns:
+        class_dict = classification_report (output_dict = True, y_true = y_true.loc [:,col], y_pred = y_pred.loc [:,col])
+    
+        metric_df = pd.DataFrame (pd.DataFrame.from_dict (class_dict))
+        
+        metric_df.drop(['macro avg', 'weighted avg'], axis =1, inplace = True)
+        
+        metric_df.drop(index = 'support', inplace = True)
+        
+        metric_df = pd.DataFrame (metric_df.transpose ().mean ())
+         
+        metric_df = metric_df.transpose ()
+    
+        report = report.append (metric_df, ignore_index = True)    
+    
+    report.index = y_true.columns
+    
+    return report
+    
+
 
 def load_data(database_filepath):
+    '''
+    Input
+    database_filepath: filepath of database
+    Output: X,y and category names from the database
+    '''
     engine = create_engine('sqlite:///' + database_filepath)
     df = pd.read_sql_table('message_and_category', engine)
     X = df['message']
@@ -34,6 +73,11 @@ def load_data(database_filepath):
     return X, y, category_names
 
 def tokenize(text):
+    '''
+    Input
+    text: textual data
+    Output: returns a lemmatized and stopwords removed list of words
+    '''
     text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
     
     stop_words = stopwords.words("english")
@@ -45,13 +89,24 @@ def tokenize(text):
 
 
 def build_model():
-    pipeline = Pipeline([
-                        ('vect', CountVectorizer(tokenizer=tokenize)),
-                        ('tfidf', TfidfTransformer()),
-                        ('clf', OneVsRestClassifier(estimator=LinearSVC()))
-                        ])
+    pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize)),
+                     ('tfidf', TfidfTransformer()),
+                     ('scale',StandardScaler(with_mean=False)),
+                     ('clf', OneVsRestClassifier(LinearSVC()))])
 
-    return pipeline
+    search_space = [{'clf':[OneVsRestClassifier(LinearSVC())],
+                 'clf__estimator__C': [1, 10, 100]},
+                
+                {'clf': [OneVsRestClassifier(LogisticRegression(solver='sag'))], 
+                 'clf__estimator__C': [1, 10, 100]},
+                
+                {'clf': [OneVsRestClassifier(MultinomialNB())],
+                 'clf__estimator__alpha': [0.1, 0.5, 1]},
+                {'clf':[multioutput.MultiOutputClassifier(RandomForestClassifier())]}]
+
+    cv_pipeline = GridSearchCV(pipeline, search_space)
+
+    return cv_pipeline
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
@@ -68,11 +123,8 @@ def evaluate_model(model, X_test, Y_test, category_names):
     Y_pred = model.predict(X_test)
     
     #Calculate the accuracy for each of them.
-    for i in range(len(category_names)):
-        print("Category:", category_names[i],"\n", classification_report(Y_test.iloc[:, i].values, Y_pred[:, i]))
-        print('Accuracy of %25s: %.2f' %(category_names[i], accuracy_score(Y_test.iloc[:, i].values, Y_pred[:,i])))
-
-
+    report = evaulation_metric(Y_test,Y_pred)
+    print(report)
 
 def save_model(model, model_filepath):
     '''

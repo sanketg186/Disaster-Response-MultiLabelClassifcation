@@ -22,6 +22,7 @@ from dash.dependencies import Input, Output
 from textblob import TextBlob
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 
+# Tokenizer
 def tokenize(text):
     text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
     
@@ -39,7 +40,10 @@ df = pd.read_sql_table('message_and_category', engine)
 # load model
 model = joblib.load("../models/pipeline.sav")
 
+# NLP_process is used for text processing
 nlp_process = NLP_process(df)
+
+# DrawPlot is used to create and initialize plotly graphs
 draw_obj = DrawPlot(df,nlp_process)
 
 fig1 = draw_obj.draw_category_distribution()
@@ -50,6 +54,8 @@ fig8 = draw_obj.draw_pos_distribution()
 fig3 = draw_obj.draw_most_frequent_words(10)
 fig4 = draw_obj.draw_most_frequent_bigrams(10)
 
+
+# Data visualization layout page
 visualization_layout = html.Div(children = [
     html.Div([html.H1('Disaster Response Message Visualization')],style={'text-align':'center','color':'purple'})
     ,
@@ -122,6 +128,7 @@ visualization_layout = html.Div(children = [
     ])
 ])
 
+# Prediction layout 
 prediction_layout = html.Div(children = [
     html.Div([html.H1('Disaster Response Message Prediction')],style={'text-align':'center','color':'purple'})
     ,
@@ -134,9 +141,9 @@ prediction_layout = html.Div(children = [
         html.Div(id='output_graph')],style={'text-align':'center'})
 ])
 
-
+# Homepage layout
 index_layout = html.Div([
-    html.Div(html.H1("Figure-8-Disaster Response Message Visualization and Prediction"),style={'text-align':'center','color':'yellow'}),
+    html.Div(html.H1("Figure-8-Disaster Response Message Visualization and Prediction"),style={'text-align':'center','color':'orange'}),
     dbc.Row([
     dbc.Col(html.Div([dbc.Button('Data Visualization',color="success", id='visualize-button',className="mr-1", n_clicks=0)],className="six-columns")),
     dbc.Col(html.Div([dbc.Button('Prediction', id='predict-button',color="warning",className="mr-1", n_clicks=0)],className="six-columns"))
@@ -154,6 +161,7 @@ app = dash.Dash(__name__, external_stylesheets=[external_stylesheets,dbc.themes.
 
 app.layout = main_layout
 
+# Callbacks to handle page input
 @app.callback(Output('page-content', 'children'),
               Input('visualize-button', 'n_clicks'),
               Input('predict-button', 'n_clicks')
@@ -168,18 +176,18 @@ def displayClick(btn1,btn2):
 
 @app.callback(Output('output_graph', 'children'),
              [Input('input_text', 'value')]
-             )
+             )  
 def update_figure(input1):
     if input1 is not None:
-        y_predict = model.predict_proba([input1])[0]
+        y_predict = model.predict_proba([input1])
         cols = draw_obj.df.columns
         cat_cols = cols[4:]
-        x=cat_cols
-        y=y_predict
-        print(y)
-        trace1 = go.Bar(x=y,y=x,marker=dict(color='#ffdc51'),orientation="h")
-        layout1 = go.Layout(width=1200,height=800,title="Data distribution across different label categories", legend=dict(x=0.1, y=1.1, orientation='h')
-                  ,xaxis=dict(title="Number of data points for each label"),
+        predict_prob = [(x,y[0][1]) for x,y in zip(list(cat_cols),list(y_predict))]
+        predict_prob = sorted(predict_prob, key = lambda x: x[1], reverse=False)
+        df_predict_prob = pd.DataFrame(predict_prob, columns = ['category' , 'prob'])
+        trace1 = go.Bar(x=df_predict_prob['prob'],y=df_predict_prob['category'],marker=dict(color='#ffdc51'),orientation="h")
+        layout1 = go.Layout(width=1200,height=800,title="Probabilites of different labels", legend=dict(x=0.1, y=1.1, orientation='h')
+                  ,xaxis=dict(title="Probability of a label"),
                    yaxis=dict(title="Label Name"))
         fig1 = go.Figure(data = [trace1], layout = layout1)
         return dcc.Graph(
