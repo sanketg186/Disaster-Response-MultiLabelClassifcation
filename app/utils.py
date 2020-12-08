@@ -61,8 +61,8 @@ class DrawPlot:
         '''
         x_length = self.nlp_process.get_message_length()
         trace5 = go.Histogram(x=x_length, marker=dict(color='#ffdc51'),nbinsx=100)
-        layout5 = go.Layout(title="Number of messages", legend=dict(x=0.1, y=1.1, orientation='h')
-                          ,xaxis=dict(title="Message length"))
+        layout5 = go.Layout(title="Message length distribution in the data", legend=dict(x=0.1, y=1.1, orientation='h')
+                          ,xaxis=dict(title="Message length"),yaxis=dict(title="Number of Messages"))
         fig5 = go.Figure(data = [trace5], layout = layout5)
         return fig5
     
@@ -73,8 +73,8 @@ class DrawPlot:
         '''
         word_length = self.nlp_process.get_message_word_count()
         trace6 = go.Histogram(x=word_length, marker=dict(color='#ffdc51'),nbinsx=100)
-        layout6 = go.Layout(title="Number of messages", legend=dict(x=0.1, y=1.1, orientation='h')
-                          ,xaxis=dict(title="word count length"))
+        layout6 = go.Layout(title="Message word count distribution in the data", legend=dict(x=0.1, y=1.1, orientation='h')
+                          ,xaxis=dict(title="word count length"),yaxis=dict(title="Number of messages"))
         fig6 = go.Figure(data = [trace6], layout = layout6)
         return fig6
     

@@ -121,7 +121,7 @@ def evaluate_model(model, X_test, Y_test, category_names):
         Print accuracy and classfication report for each category
     '''
     Y_pred = model.predict(X_test)
-    
+    Y_pred = pd.DataFrame (Y_pred, columns = Y_test.columns)
     #Calculate the accuracy for each of them.
     report = evaulation_metric(Y_test,Y_pred)
     print(report)
