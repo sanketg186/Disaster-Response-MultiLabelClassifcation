@@ -32,7 +32,7 @@ class DrawPlot:
         x=cat_cols
         y=self.df[cat_cols].sum().sort_values(ascending=True)
         trace1 = go.Bar(x=y,y=x,marker=dict(color='#ffdc51'),orientation="h")
-        layout1 = go.Layout(title="Data distribution across different label categories", legend=dict(x=0.1, y=1.1, orientation='h')
+        layout1 = go.Layout(width=1200,height=800,title="Data distribution across different label categories", legend=dict(x=0.1, y=1.1, orientation='h')
                   ,xaxis=dict(title="Number of data points for each label"),
                    yaxis=dict(title="Label Name"))
         fig1 = go.Figure(data = [trace1], layout = layout1)
@@ -91,6 +91,7 @@ class DrawPlot:
                           ,xaxis=dict(title="Number of part of speech tags"),
                            yaxis=dict(title="Part of Speech Name"))
         fig7 = go.Figure(data = [trace7], layout = layout7)
+        return fig7
 
         
     def draw_most_frequent_words(self,top_k_words):

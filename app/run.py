@@ -34,11 +34,11 @@ def tokenize(text):
     return words_lemmed
 
 # load data
-engine = create_engine('sqlite:///../data/DisasterResponse.db')
+engine = create_engine('sqlite:///data/DisasterResponse.db')
 df = pd.read_sql_table('message_and_category', engine)
 
 # load model
-model = joblib.load("../models/pipeline.sav")
+model = joblib.load("models/classifier.pkl")
 
 # NLP_process is used for text processing
 nlp_process = NLP_process(df)
