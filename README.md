@@ -34,14 +34,26 @@ In this project, we will dive into the Figure-8(now Appen) disaster response mes
 
 ![file3](https://github.com/sanketg186/Disaster-Response-MultiLabelClassifcation/blob/main/visualization3.png)
 
+![file4](https://github.com/sanketg186/Disaster-Response-MultiLabelClassifcation/blob/main/visualization4.png)
+
 ## File Descriptions <a name="files"></a>
 This folder contains to jupyter notebooks.
 1. **etl.ipnyb**: This notebook contains the ETL(Extract,Transform, Load) pipeline for cleaning the data and saving the data into the database.
 2. **ML_Pipeline.ipnyb** : This notebook contains machine learning implementations for pipeline and multilabel classification.
-3. **** : 
-4. **Data**: Data files.
+3. **app** : This folder contains the web application code. 
+4. **data**: This folder contains the data files, data cleaning and database creation code.
+5. **models**: This folder contains the model training code.
+
+## Run
+In the terminal go to the directory Disaster-Response-MultiLabelClassifcation/ and run the following commands in sequence.
+- python data/process_data.py disaster_messages.csv disaster_categories.csv DisasterResponse.db : This will create DisasterResponse.db database.
+- python models/train_classifier.py DisasterResponse.db classifier.pkl: This will train classifier on database and save the model as classifier.pkl.
+- python app/run.py : This will run a web application.
+
+Run the web application Go to http://127.0.0.1:3001/
+The web app provides data dashboard and text-message classification page for mutli-label classification. The F1-score for labels falls in the range of .62 and .93. The imbalance issue has effected the F1-score. Proper model selection and paramter tuning is needed to get optimum results.
 
 ## Results <a name="results"></a>
-The main findings of the code can be found at the post available [here](https://medium.com/@sanketg186/insights-into-the-boston-airbnb-29eabcc20ba7).
+The dataset has class imbalance issue. This resul
 ## Licensing, Authors, Acknowledgements <a name="licensing"></a>
-Must give credit to Airbnb and Kaggle for the data. You can find the Licensing for the data and other descriptive information at the Kaggle link available [here](https://www.kaggle.com/airbnb/boston).
+Must give credit to Figure-8 for the data.
