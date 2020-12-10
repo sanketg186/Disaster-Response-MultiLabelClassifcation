@@ -185,15 +185,26 @@ def update_figure(input1):
         predict_prob = [(x,y[0][1]) for x,y in zip(list(cat_cols),list(y_predict))]
         predict_prob = sorted(predict_prob, key = lambda x: x[1], reverse=False)
         df_predict_prob = pd.DataFrame(predict_prob, columns = ['category' , 'prob'])
+        
+        result_list = [] 
+        for x,y in zip(cat_cols,y_predict):
+            if y[0][1]<0.5:
+                result_list.append(dbc.Row(html.H3([dbc.Badge(x, color="secondary", className="mr-1")]), justify="center", align="center"))
+            else:
+                result_list.append(dbc.Row(html.H3([dbc.Badge(x, color="success", className="mr-1")]), justify="center", align="center"))
+                
+        result_div = html.Div(result_list,style={'text-align':'center'})
+
+
         trace1 = go.Bar(x=df_predict_prob['prob'],y=df_predict_prob['category'],marker=dict(color='#ffdc51'),orientation="h")
         layout1 = go.Layout(width=1200,height=800,title="Probabilites of different labels", legend=dict(x=0.1, y=1.1, orientation='h')
                   ,xaxis=dict(title="Probability of a label"),
                    yaxis=dict(title="Label Name"))
         fig1 = go.Figure(data = [trace1], layout = layout1)
-        return dcc.Graph(
+        return [result_div,dcc.Graph(
             id='example_graph',
             figure= fig1
-        )
+        )]
     else:
         return ""
 
